@@ -7,30 +7,30 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent implements OnInit {
-  
   model: any = {};
 
-  constructor(private authService : AuthService) { }
+  constructor(private authService: AuthService) {}
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  login() {
+    this.authService.login(this.model).subscribe(
+      next => {
+        console.log('logged in successfully');
+      },
+      error => {
+        console.log(error);
+      }
+    );
   }
 
-  login(){
-    this.authService.login(this.model).subscribe(next=>{
-      console.log('logged in successfully')
-    },error => {
-      console.log('failled at log in')
-    });
-  }
-
-  loggedIn(){
+  loggedIn() {
     const token = localStorage.getItem('token');
     return !!token;
   }
 
-  logOut(){
+  logOut() {
     localStorage.removeItem('token');
     console.log('logged out');
   }
-
 }
