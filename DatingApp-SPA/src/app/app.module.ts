@@ -32,6 +32,7 @@ import { MemberListResolver } from './_resolvers/member-list.resolver';
 import { MemberEditResolver } from './_resolvers/member-edit.resolver';
 import { PreventUnsavedChanges } from './_guards/prevent-unsaved-changes.guard';
 import { FileUploadModule } from 'ng2-file-upload';
+import { ListResolver } from './_resolvers/list.resolver';
 
 
 export function tokenGetter(){
@@ -89,7 +90,8 @@ export class CustomHammerConfig extends HammerGestureConfig  {
       PreventUnsavedChanges,
       MemberDetailResolver,
       MemberListResolver,
-      MemberEditResolver, 
+      MemberEditResolver,
+      ListResolver,
       { provide: HAMMER_GESTURE_CONFIG, useClass: CustomHammerConfig }
    ],
    bootstrap: [
