@@ -132,5 +132,55 @@ namespace DatingApp.API.Data
             return await _context.Likes.FirstOrDefaultAsync(u => 
                 u.LikerId == id && u.LikeeId == recipientId);
         }
+
+        public async Task<Message> GetMessage(int id)
+        {
+            return await _context.Messages.FirstOrDefaultAsync(u =>
+                u.Id == id);
+        }
+
+        public async Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams)
+        {
+            var messages = _context.Messages
+                .Include(u => u.Sender).ThenInclude(p => p.Photos)
+                .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+                .AsQueryable();
+            
+            // filtering
+            switch (messageParams.MessageContainer)
+            {
+                case "Inbox":
+                    messages = messages.Where(i => i.RecipientId == messageParams.UserId && i.RecipientDeleted == false);
+                    break;
+                case "Outbox":
+                    messages = messages.Where(i => i.SenderId == messageParams.UserId && i.SenderDeleted == false);
+                    break;
+                default:
+                    messages = messages.Where(i => i.RecipientId == messageParams.UserId && i.IsRead == false && i.RecipientDeleted == false);
+                    break;
+            }
+
+            // ordering:
+            messages = messages.OrderByDescending(i => i.MessageSent);
+
+            // return the paginated list:
+            return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
+        }
+
+        public async Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
+        {
+            // retrieve full conversation between two users:
+            var messages = await _context.Messages
+                .Include(u => u.Sender).ThenInclude(p => p.Photos)
+                .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+                // next line allows to bring both inbox and outbox
+                .Where(m => m.SenderId == userId && m.RecipientId == recipientId && m.SenderDeleted == false
+                    || m.SenderId == recipientId && m.RecipientId == userId && m.RecipientDeleted == false)
+                .OrderByDescending(m => m.MessageSent)
+                .ToListAsync();
+
+            
+            return messages;
+        }
     }
 }
